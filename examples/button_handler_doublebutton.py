@@ -6,94 +6,116 @@
 import time
 
 import board
+from keypad import Keys
 
-from button_handler import ButtonHandler
+from button_handler import ButtonHandler, ButtonInitConfig, ButtonInput
 
-button_a = ButtonHandler(board.D9)
-button_b = ButtonHandler(board.A2)
+config = ButtonInitConfig(max_multi_press=3)
+scanner = Keys([board.D9, board.A2], value_when_pressed=False)
+button_handler = ButtonHandler(scanner.events, 2, {0: config, 1: config})
 
-
-def double_press_a():
-    print("Button A has been double pressed!")
-
-
-def double_press_b():
-    print("Button B has been double pressed!")
+button_0 = button_handler.buttons[0]
+button_1 = button_handler.buttons[1]
 
 
-def short_press_a():
-    print("Button A has been pressed quickly!")
+def double_press_0():
+    print("Button 0 has been double pressed!")
 
 
-def short_press_b():
-    print("Button B has been pressed quickly!")
+def double_press_1():
+    print("Button 1 has been double pressed!")
 
 
-def long_press_a():
-    print("Button A has been pressed for a long time!")
+def triple_press_0():
+    print("Button 0 has been triple pressed!")
 
 
-def long_press_b():
-    print("Button B has been pressed for a long time!")
+def triple_press_1():
+    print("Button 1 has been triple pressed!")
 
 
-def double_press_a_holding_b():
-    print("Button A has been double pressed while button B was held down!")
+def short_press_0():
+    print("Button 0 has been pressed quickly!")
 
 
-def double_press_b_holding_a():
-    print("Button B has been double pressed while button A was held down!")
+def short_press_1():
+    print("Button 1 has been pressed quickly!")
 
 
-def short_press_a_holding_b():
-    print("Button A has been pressed quickly while button B was held down!")
+def long_press_0():
+    print("Button 0 has been pressed for a long time!")
 
 
-def short_press_b_holding_a():
-    print("Button B has been pressed quickly while button A was held down!")
+def long_press_1():
+    print("Button 1 has been pressed for a long time!")
 
 
-def long_press_a_holding_b():
-    print("Button A has been pressed for a long time while button B was held down!")
+def double_press_0_holding_1():
+    print("Button 0 has been double pressed while button 1 was held down!")
 
 
-def long_press_b_holding_a():
-    print("Button B has been pressed for a long time while button A was held down!")
+def double_press_1_holding_0():
+    print("Button 1 has been double pressed while button 0 was held down!")
+
+
+def triple_press_0_holding_1():
+    print("Button 0 has been triple pressed while button 1 was held down!")
+
+
+def triple_press_1_holding_0():
+    print("Button 1 has been triple pressed while button 0 was held down!")
+
+
+def short_press_0_holding_1():
+    print("Button 0 has been pressed quickly while button 1 was held down!")
+
+
+def short_press_1_holding_0():
+    print("Button 1 has been pressed quickly while button 0 was held down!")
+
+
+def long_press_0_holding_1():
+    print("Button 0 has been pressed for a long time while button 1 was held down!")
+
+
+def long_press_1_holding_0():
+    print("Button 1 has been pressed for a long time while button 0 was held down!")
 
 
 actions = {
-    ("DOUBLE_PRESS", "A"): double_press_a,
-    ("DOUBLE_PRESS", "B"): double_press_b,
-    ("SHORT_PRESS", "A"): short_press_a,
-    ("SHORT_PRESS", "B"): short_press_b,
-    ("LONG_PRESS", "A"): long_press_a,
-    ("LONG_PRESS", "B"): long_press_b,
+    ButtonInput("DOUBLE_PRESS", 0): double_press_0,
+    ButtonInput("DOUBLE_PRESS", 1): double_press_1,
+    ButtonInput("3_MULTI_PRESS", 0): triple_press_0,
+    ButtonInput("3_MULTI_PRESS", 1): triple_press_1,
+    ButtonInput("SHORT_PRESS", 0): short_press_0,
+    ButtonInput("SHORT_PRESS", 1): short_press_1,
+    ButtonInput("LONG_PRESS", 0): long_press_0,
+    ButtonInput("LONG_PRESS", 1): long_press_1,
 }
 
-holding_actions = {
-    ("DOUBLE_PRESS", "A"): double_press_a_holding_b,
-    ("DOUBLE_PRESS", "B"): double_press_b_holding_a,
-    ("SHORT_PRESS", "A"): short_press_a_holding_b,
-    ("SHORT_PRESS", "B"): short_press_b_holding_a,
-    ("LONG_PRESS", "A"): long_press_a_holding_b,
-    ("LONG_PRESS", "B"): long_press_b_holding_a,
+double_actions = {
+    ButtonInput("DOUBLE_PRESS", 0): double_press_0_holding_1,
+    ButtonInput("DOUBLE_PRESS", 1): double_press_1_holding_0,
+    ButtonInput("3_MULTI_PRESS", 0): triple_press_0_holding_1,
+    ButtonInput("3_MULTI_PRESS", 1): triple_press_1_holding_0,
+    ButtonInput("SHORT_PRESS", 0): short_press_0_holding_1,
+    ButtonInput("SHORT_PRESS", 1): short_press_1_holding_0,
+    ButtonInput("LONG_PRESS", 0): long_press_0_holding_1,
+    ButtonInput("LONG_PRESS", 1): long_press_1_holding_0,
 }
 
 
-def handle_input(input_, button):
-    if button == "A" and button_b.is_holding:
-        holding_actions.get((input_, button), lambda: None)()
-    elif button == "B" and button_a.is_holding:
-        holding_actions.get((input_, button), lambda: None)()
+def handle_input(input_: ButtonInput):
+    if input_.button_number is 0 and button_1.is_pressed:
+        double_actions.get(input_, lambda: None)()
+    elif input_.button_number is 1 and button_0.is_pressed:
+        double_actions.get(input_, lambda: None)()
     else:
-        actions.get((input_, button), lambda: None)()
+        actions.get(input_, lambda: None)()
 
 
 while True:
-    inputs_a = button_a.update()
-    for input_ in inputs_a:
-        handle_input(input_, "A")
-    inputs_b = button_b.update()
-    for input_ in inputs_b:
-        handle_input(input_, "B")
+    inputs = button_handler.update()
+    for input_ in inputs:
+        handle_input(input_)
     time.sleep(0.0025)
