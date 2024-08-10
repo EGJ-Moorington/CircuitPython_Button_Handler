@@ -295,7 +295,7 @@ class ButtonHandler:
 
         return inputs
 
-    def _handle_buttons(self) -> set(ButtonInput):
+    def _handle_buttons(self) -> set[ButtonInput]:
         inputs = set()
         current_time = ticks_ms()
         for button in self._buttons:
