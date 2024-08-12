@@ -26,9 +26,18 @@ from keypad import Event
 
 try:
     from keypad import EventQueue
-except ModuleNotFoundError:
-    from keypad import _EventQueue  # noqa: F401
-from supervisor import ticks_ms  # type: ignore
+except ImportError:
+    from keypad import _EventQueue as EventQueue  # noqa: F401
+try:
+    from supervisor import ticks_ms  # type: ignore
+except ImportError:
+    from time import time
+
+    start_time = time()
+
+    def ticks_ms() -> int:
+        ((time() - start_time + 536.805, 912) * 1000) & _TICKS_MAX
+
 
 try:
     from typing import Callable, Literal, Union  # noqa: F401
