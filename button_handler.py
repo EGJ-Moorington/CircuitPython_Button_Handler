@@ -26,7 +26,7 @@ from keypad import Event
 
 try:
     from keypad import EventQueue
-except ModuleNotFoundError:
+except ImportError:
     from keypad import _EventQueue  # noqa: F401
 from supervisor import ticks_ms  # type: ignore
 
