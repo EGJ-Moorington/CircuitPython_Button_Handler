@@ -22,11 +22,16 @@ Implementation Notes
 """
 
 # imports
-from keypad import Event, EventQueue
+from keypad import Event
+
+try:
+    from keypad import EventQueue
+except ModuleNotFoundError:
+    from keypad import _EventQueue  # noqa: F401
 from supervisor import ticks_ms  # type: ignore
 
 try:
-    from typing import Literal, Union  # noqa: F401
+    from typing import Callable, Literal, Union  # noqa: F401
 except ImportError:
     pass
 
@@ -153,10 +158,12 @@ class ButtonInput:
         self,
         action: Union[Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str],
         button_number: int = 0,
+        callback: Callable[[], None] = lambda: None,
         timestamp: int = 0,
     ) -> None:
         self.action = action
         self.button_number = button_number
+        self.callback = callback
         self.timestamp = timestamp
 
     @property
@@ -235,6 +242,7 @@ class ButtonHandler:
     def __init__(
         self,
         event_queue: EventQueue,
+        callable_inputs: set[ButtonInput],
         button_amount: int = 1,
         config: dict[int, ButtonInitConfig] = {},
     ) -> None:
@@ -245,17 +253,13 @@ class ButtonHandler:
             the default values is created.
         """
         if button_amount < 1:
-            raise ValueError("button_amount must be bigger than 1.")
+            raise ValueError("button_amount must be bigger than 0.")
+
+        self.callable_inputs = callable_inputs
 
         self._buttons: list[Button] = []
-        i = 0
-        while i < button_amount:  # Create a _Button object for each button to handle
-            try:
-                conf = config[i]
-            except KeyError:
-                conf = ButtonInitConfig()
-            self._buttons.append(Button(i, conf))
-            i += 1
+        for i in range(button_amount):  # Create a _Button object for each button to handle
+            self._buttons.append(Button(i, config.get(i, ButtonInitConfig())))
 
         self._event = Event()
         self._event_queue = event_queue
@@ -286,26 +290,36 @@ class ButtonHandler:
 
         event = self._event
         event_queue = self._event_queue
-        i = 0
-        while i < len(event_queue):
+        while event_queue:
             event_queue.get_into(event)
             input_ = self._handle_event(event)
             if input_:
                 inputs.add(input_)
 
+        self._call_callbacks()
         return inputs
 
-    def _handle_buttons(self) -> set(ButtonInput):
+    def _call_callbacks(self, inputs: set[ButtonInput]):
+        for input_ in inputs:
+            if not input_ in self.callable_inputs:
+                continue
+            for callable_input in self.callable_inputs:
+                if callable_input is input_:
+                    callable_input.callback()
+
+    def _handle_buttons(self) -> set[ButtonInput]:
         inputs = set()
         current_time = ticks_ms()
         for button in self._buttons:
             if button._is_held(current_time):
-                inputs.add(ButtonInput("HOLD", button.button_number, current_time))
+                inputs.add(ButtonInput("HOLD", button.button_number, timestamp=current_time))
             else:
                 num = button._check_multi_press_timeout(current_time)
                 if num:
                     inputs.add(
-                        ButtonInput(f"{num}_MULTI_PRESS", button.button_number, current_time)
+                        ButtonInput(
+                            f"{num}_MULTI_PRESS", button.button_number, timestamp=current_time
+                        )
                     )
         return inputs
 
@@ -325,15 +339,17 @@ class ButtonHandler:
                 < button.long_press_threshold
             ):  # Short press
                 if not button.enable_multi_press:
-                    input_ = ButtonInput("SHORT_PRESS", event.key_number, event.timestamp)
+                    input_ = ButtonInput("SHORT_PRESS", event.key_number, timestamp=event.timestamp)
                 elif button._press_count == button.max_multi_press:
                     input_ = ButtonInput(
-                        f"{button.max_multi_press}_MULTI_PRESS", event.key_number, event.timestamp
+                        f"{button.max_multi_press}_MULTI_PRESS",
+                        event.key_number,
+                        timestamp=event.timestamp,
                     )
                 else:  # More short presses could follow
                     return None
             else:
-                input_ = ButtonInput("LONG_PRESS", event.key_number, event.timestamp)
+                input_ = ButtonInput("LONG_PRESS", event.key_number, timestamp=event.timestamp)
                 button._is_holding = False
             button._last_press_time = None
             button._press_count = 0
