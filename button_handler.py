@@ -22,19 +22,40 @@ Implementation Notes
 """
 
 # imports
-import time
-
-from digitalio import DigitalInOut, Direction, Pull
+from keypad import Event
 
 try:
-    import typing  # noqa: F401
+    from keypad import EventQueue
+except ImportError:
+    from keypad import _EventQueue as EventQueue  # noqa: F401
+try:
+    from supervisor import ticks_ms  # type: ignore
+except ImportError:
+    from time import time
 
-    from board import Pin
+    start_time = time()
+
+    def ticks_ms() -> int:
+        ((time() - start_time + 536.805, 912) * 1000) & _TICKS_MAX
+
+
+try:
+    from typing import Callable, Literal, Union  # noqa: F401
 except ImportError:
     pass
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/EGJ-Moorington/CircuitPython_Button_Handler.git"
+
+_TICKS_PERIOD = 1 << 29
+_TICKS_MAX = _TICKS_PERIOD - 1
+
+
+def timestamp_diff(time1: int, time2: int) -> int:
+    """Compute the signed difference between two ticks values,
+    assuming that they are within 2**28 ticks"""
+    diff = (time1 - time2) & _TICKS_MAX
+    return diff
 
 
 class ButtonInitConfig:
@@ -48,7 +69,7 @@ class ButtonInitConfig:
         another release should occur to count as a double press.
     :ivar float long_press_threshold: The minimum length of a press to count as a long press,
         and the time the button should be pressed before counting as being held down.
-    :ivar bool enable_double_press: Whether to account for the possibility of another short press
+    :ivar bool enable_multi_press: Whether to account for the possibility of another short press
         following a short press and counting that as a double press.
         If set to false, :meth:`ButtonHandler.update`
         returns ``SHORT_PRESS`` immediately after a short press.
@@ -56,13 +77,13 @@ class ButtonInitConfig:
 
     def __init__(
         self,
-        enable_double_press: bool = True,
-        double_press_interval: float = 0.175,
-        long_press_threshold: float = 1.0,
-        debounce_time: float = 0.025,
+        enable_multi_press: bool = True,
+        multi_press_interval: float = 175,
+        long_press_threshold: float = 1000,
+        max_multi_press: int = 2,
     ) -> None:
         """
-        :param bool enable_double_press: Sets :attr:`.enable_double_press`
+        :param bool enable_multi_press: Sets :attr:`.enable_multi_press`
             (whether to track double presses).
         :param float double_press_interval: Sets :attr:`.double_press_interval`
             (the time frame within which two presses should occur to count as a double press).
@@ -71,10 +92,124 @@ class ButtonInitConfig:
         :param float debounce_time: Sets :attr:`.debounce_time`
             (the timeout applied to the debounce logic).
         """
-        self.debounce_time = debounce_time
-        self.double_press_interval = double_press_interval
-        self.enable_double_press = enable_double_press
+        self.enable_multi_press = enable_multi_press
         self.long_press_threshold = long_press_threshold
+        self.max_multi_press = max_multi_press
+        self.multi_press_interval = multi_press_interval
+
+
+class Button:
+    def __init__(
+        self, button_number: int = 0, config: ButtonInitConfig = ButtonInitConfig()
+    ) -> None:
+        if button_number < 0:
+            raise ValueError("button_number must be non-negative.")
+        self._button_number = button_number
+        self.enable_multi_press = config.enable_multi_press
+        self.long_press_threshold = config.long_press_threshold
+        self.max_multi_press = config.max_multi_press
+        self.multi_press_interval = config.multi_press_interval
+
+        self._last_press_time = None
+        self._press_count = 0
+        self._press_start_time = 0
+        self._is_holding = False
+        self._is_pressed = False
+
+    @property
+    def button_number(self):
+        return self._button_number
+
+    @property
+    def is_holding(self):
+        """
+        Whether the button has been held down for at least the time
+        specified by :attr:`long_press_threshold`.
+
+        :type: bool
+        """
+        return self._is_holding
+
+    @property
+    def is_pressed(self):
+        """
+        Whether the button is currently pressed.
+
+        :type: bool
+        """
+        return self._is_pressed
+
+    def _check_multi_press_timeout(self, current_time: int) -> Union[int, None]:
+        if (
+            self._press_count > 0
+            and not self._is_pressed
+            and timestamp_diff(current_time, self._last_press_time) > self.multi_press_interval
+        ):
+            press_count = self._press_count
+            self._last_press_time = None
+            self._press_count = 0
+            return press_count
+        return None
+
+    def _is_held(self, current_time: int) -> bool:
+        if (
+            not self._is_holding
+            and self._is_pressed
+            and timestamp_diff(current_time, self._press_start_time) >= self.long_press_threshold
+        ):
+            self._is_holding = True
+            return True
+        return False
+
+
+class ButtonInput:
+    def __init__(
+        self,
+        action: Union[Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str],
+        button_number: int = 0,
+        callback: Callable[[], None] = lambda: None,
+        timestamp: int = 0,
+    ) -> None:
+        self.action = action
+        self.button_number = button_number
+        self.callback = callback
+        self.timestamp = timestamp
+
+    @property
+    def action(self):
+        return self._action
+
+    @action.setter
+    def action(
+        self, action: Union[Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str]
+    ):
+        if action in {"SHORT_PRESS", "LONG_PRESS", "HOLD"}:
+            self._action = action
+            return
+        try:
+            if action == "DOUBLE_PRESS":
+                action = "2_MULTI_PRESS"
+            if not action.endswith("_MULTI_PRESS"):
+                raise ValueError
+            num = int(action.split("_")[0])
+            if num < 1:
+                raise ValueError
+            if num == 1:
+                action = "SHORT_PRESS"
+            self._action = action
+        except ValueError:
+            raise ValueError(f"Invalid action: {action}.")
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ButtonInput):
+            return self._action == other._action and self.button_number == other.button_number
+        return False
+
+    def __hash__(self) -> int:
+        return hash((self.action, self.button_number))
+
+    def __str__(self) -> str:
+        return f"{self.action} on button {self.button_number}"
 
 
 class ButtonHandler:
@@ -91,7 +226,7 @@ class ButtonHandler:
         another release should occur to count as a double press.
     :ivar float long_press_threshold: The minimum length of a press to count as a long press,
         and the time the button should be pressed before counting as being held down.
-    :ivar bool enable_double_press: Whether to account for the possibility of another short press
+    :ivar bool enable_multi_press: Whether to account for the possibility of another short press
         following a short press and counting that as a double press. If set to false, :meth:`update`
         returns ``SHORT_PRESS`` immediately after a short press.
 
@@ -113,48 +248,36 @@ class ButtonHandler:
         was called.
     """
 
-    def __init__(self, pin: Pin, config: ButtonInitConfig = ButtonInitConfig()) -> None:
+    def __init__(
+        self,
+        event_queue: EventQueue,
+        callable_inputs: set[ButtonInput],
+        button_amount: int = 1,
+        config: dict[int, ButtonInitConfig] = {},
+    ) -> None:
         """
         :param Pin pin: The pin connected to the button.
         :param ButtonInitConfig config: The configuration object to use to initialise the handler.
             If no configuration object is provided, an object containing
             the default values is created.
         """
-        self._button = DigitalInOut(pin)
-        self._button.direction = Direction.INPUT
-        self._button.pull = Pull.UP
-        self.debounce_time = config.debounce_time
-        self.double_press_interval = config.double_press_interval
-        self.enable_double_press = config.enable_double_press
-        self.long_press_threshold = config.long_press_threshold
+        if button_amount < 1:
+            raise ValueError("button_amount must be bigger than 0.")
 
-        self._press_count = 0
-        self._press_start_time = 0
-        self._first_press_time = None
-        self._is_holding = False
-        self._is_pressed = False
-        self._was_pressed = False
+        self.callable_inputs = callable_inputs
+
+        self._buttons: list[Button] = []
+        for i in range(button_amount):  # Create a _Button object for each button to handle
+            self._buttons.append(Button(i, config.get(i, ButtonInitConfig())))
+
+        self._event = Event()
+        self._event_queue = event_queue
 
     @property
-    def is_holding(self):
-        """
-        Whether the button has been held down for at least the time
-        specified by :attr:`long_press_threshold`.
+    def buttons(self) -> list[Button]:
+        return self._buttons
 
-        :type: bool
-        """
-        return self._is_holding
-
-    @property
-    def is_pressed(self):
-        """
-        Whether the button is currently pressed.
-
-        :type: bool
-        """
-        return self._is_pressed
-
-    def update(self) -> list[str]:
+    def update(self) -> set[ButtonInput]:
         """
         Read the current state of the button and return a list containing raised "events'" strings.
 
@@ -170,51 +293,73 @@ class ButtonHandler:
 
         :rtype: list[str]
         """
-        current_time = time.monotonic()
-        self._is_pressed = not self._button.value
+        inputs = set()
 
-        # Debounce logic
-        if self._is_pressed != self._was_pressed:
-            time.sleep(self.debounce_time)
-            self._is_pressed = not self._button.value
+        inputs.update(self._handle_buttons())
 
-        events = []
+        event = self._event
+        event_queue = self._event_queue
+        while event_queue:
+            event_queue.get_into(event)
+            input_ = self._handle_event(event)
+            if input_:
+                inputs.add(input_)
 
-        if self._is_pressed and not self._was_pressed:  # Button just pressed
-            self._press_start_time = current_time
-            if self._first_press_time is None:
-                self._first_press_time = current_time
-            self._press_count += 1
+        self._call_callbacks()
+        return inputs
 
-        if (
-            self._is_pressed and current_time - self._press_start_time >= self.long_press_threshold
-        ):  # Holding
-            self._is_holding = True
-            events.append("HOLDING")
+    def _call_callbacks(self, inputs: set[ButtonInput]):
+        for input_ in inputs:
+            if not input_ in self.callable_inputs:
+                continue
+            for callable_input in self.callable_inputs:
+                if callable_input is input_:
+                    callable_input.callback()
 
-        if not self._is_pressed and self._was_pressed:  # Button just released
-            if current_time - self._press_start_time < self.long_press_threshold:
-                if not self.enable_double_press:
-                    events.append("SHORT_PRESS")
-                elif self._press_count == 2:
-                    events.append("DOUBLE_PRESS")
-                else:
-                    self._was_pressed = self._is_pressed
-                    return events
+    def _handle_buttons(self) -> set[ButtonInput]:
+        inputs = set()
+        current_time = ticks_ms()
+        for button in self._buttons:
+            if button._is_held(current_time):
+                inputs.add(ButtonInput("HOLD", button.button_number, timestamp=current_time))
             else:
-                events.append("LONG_PRESS")
-            self._is_holding = False
-            self._first_press_time = None
-            self._press_count = 0
+                num = button._check_multi_press_timeout(current_time)
+                if num:
+                    inputs.add(
+                        ButtonInput(
+                            f"{num}_MULTI_PRESS", button.button_number, timestamp=current_time
+                        )
+                    )
+        return inputs
 
-        if (
-            self._press_count == 1
-            and current_time - self._first_press_time > self.double_press_interval
-            and not self._is_pressed
-        ):
-            events.append("SHORT_PRESS")
-            self._first_press_time = None
-            self._press_count = 0
+    def _handle_event(self, event: Event) -> Union[ButtonInput, None]:
+        button = self._buttons[event.key_number]
+        if event.pressed:  # Button just pressed
+            button._is_pressed = True
+            button._press_start_time = event.timestamp
+            if button._press_count < button.max_multi_press:
+                button._last_press_time = event.timestamp
+            button._press_count += 1
 
-        self._was_pressed = self._is_pressed
-        return events
+        else:  # Button just released
+            button._is_pressed = False
+            if (
+                timestamp_diff(event.timestamp, button._press_start_time)
+                < button.long_press_threshold
+            ):  # Short press
+                if not button.enable_multi_press:
+                    input_ = ButtonInput("SHORT_PRESS", event.key_number, timestamp=event.timestamp)
+                elif button._press_count == button.max_multi_press:
+                    input_ = ButtonInput(
+                        f"{button.max_multi_press}_MULTI_PRESS",
+                        event.key_number,
+                        timestamp=event.timestamp,
+                    )
+                else:  # More short presses could follow
+                    return None
+            else:
+                input_ = ButtonInput("LONG_PRESS", event.key_number, timestamp=event.timestamp)
+                button._is_holding = False
+            button._last_press_time = None
+            button._press_count = 0
+            return input_
