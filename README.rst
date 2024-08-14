@@ -22,7 +22,7 @@ Introduction
     :target: https://github.com/astral-sh/ruff
     :alt: Code Style: Ruff
 
-This helper library simplifies the usage of buttons with CircuitPython, by detecting and differentiating button inputs, and returning a list of the inputs.
+This helper library simplifies the usage of buttons with CircuitPython, by detecting and differentiating button inputs, returning a set of the inputs and calling their corresponding functions.
 
 
 Dependencies
@@ -104,10 +104,9 @@ This simple script showcases the usage of this library using a single button.
     import time
 
     import board
+    from keypad import Keys
 
     from button_handler import ButtonHandler
-
-    button = ButtonHandler(board.D9)
 
 
     def double_press():
@@ -122,26 +121,23 @@ This simple script showcases the usage of this library using a single button.
         print("Long press detected!")
 
 
-    def holding():
-        print("The button is being held down!")
+    def hold():
+        print("The button began being held down!")
 
 
     actions = {
         "DOUBLE_PRESS": double_press,
         "SHORT_PRESS": short_press,
         "LONG_PRESS": long_press,
-        "HOLDING": holding,
+        "HOLD": hold,
     }
 
-
-    def handle_input(input_):
-        actions.get(input_, lambda: None)()
+    scanner = Keys([board.D9], value_when_pressed=False)
+    button_handler = ButtonHandler(scanner.events, actions)
 
 
     while True:
-        inputs = button.update()
-        for input_ in inputs:
-            handle_input(input_)
+        button_handler.update()
         time.sleep(0.0025)
 
 Documentation
