@@ -51,7 +51,7 @@ _TICKS_MAX = _TICKS_PERIOD - 1
 def timestamp_diff(time1: int, time2: int) -> int:
     """
     Compute the difference between two ticks values,
-    assuming that they are within 2\ :sup:`28` ticks.
+    assuming that they are within 2\\ :sup:`28` ticks.
 
     :param int time1: The minuend of the time difference, in milliseconds.
     :param int time2: The subtrahend of the time difference, in milliseconds.
@@ -442,7 +442,7 @@ class ButtonHandler:
         event_queue: EventQueue,
         callable_inputs: set[ButtonInput],
         button_amount: int = 1,
-        config: dict[int, ButtonInitConfig] = {},
+        config: dict[int, ButtonInitConfig] = None,
     ) -> None:
         """
         :param keypad.EventQueue event_queue: Sets :attr:`_event_queue`
@@ -481,14 +481,18 @@ class ButtonHandler:
 
             The :class:`keypad.EventQueue` object the handler should read events from.
         """
-        if button_amount < 1 or not isinstance(button_amount, int):
+        if not isinstance(button_amount, int) or button_amount < 1:
             raise ValueError("button_amount must be bigger than 0.")
 
         self.callable_inputs = callable_inputs
 
         self._buttons: list[Button] = []
         for i in range(button_amount):  # Create a Button object for each button to handle
-            self._buttons.append(Button(i, config.get(i, ButtonInitConfig())))
+            if config:
+                conf = config.get(i, ButtonInitConfig())
+            else:
+                conf = ButtonInitConfig()
+            self._buttons.append(Button(i, conf))
 
         self._event = Event()
         self._event_queue = event_queue
@@ -507,9 +511,9 @@ class ButtonHandler:
         """
         Check if any button ended a multi press since the last time this method was called,
         process the next :class:`keypad.Event` in :attr:`_event_queue`, call all the relevant
-        callback functions and return a set of the detected :class:`ButtonInput`\ s.
+        callback functions and return a set of the detected :class:`ButtonInput`\\ s.
 
-        :return: Returns a set containing all of the detected :class:`ButtonInput`\ s
+        :return: Returns a set containing all of the detected :class:`ButtonInput`\\ s
         :rtype: set[ButtonInput]
         """
         inputs = set()
