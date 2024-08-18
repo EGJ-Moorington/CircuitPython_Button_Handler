@@ -10,38 +10,18 @@ sys.path.append(".")
 from button_handler import *
 
 
-class MockEvent:
-    """A key transition event."""
-
+class MockEvent(Event):
     def __init__(
         self, key_number: int = 0, pressed: bool = True, timestamp: int = ticks_ms()
     ) -> None:
-        """Create a key transition event, which reports a key-pressed or key-released transition.
-
-        :param int key_number: The key number.
-        :param bool pressed: `True if the key was pressed; False if it was released.
-        :param int timestamp: The time in milliseconds that the keypress occurred in the
-            supervisor.ticks_ms time system.  If specified as None,
-            the current value of supervisor.ticks_ms is used.
-        """
-        self._key_number = key_number
-        self._pressed = pressed
+        super().__init__(key_number, pressed)
         self.timestamp = timestamp
 
     def __eq__(self, other: object) -> bool:
-        """Two Event objects are equal if their key_number
-        and pressed/released values are equal.
-        Note that this does not compare the event timestamps.
-        """
-        return self.key_number == other.key_number and self.pressed == other.pressed
+        return super().__eq__(other)
 
     def __hash__(self) -> int:
-        """Returns a hash for the Event, so it can be used in dictionaries, etc..
-
-        Note that as events with different timestamps compare equal,
-        they also hash to the same value.
-        """
-        return hash((self.key_number, self.pressed))
+        return super().__hash__()
 
     @property
     def key_number(self):
@@ -60,31 +40,11 @@ class MockEvent:
         self._pressed = value
 
 
-class MockEventQueue:
-    """A queue of `Event` objects, filled by a `keypad` scanner such as `Keys` or `KeyMatrix`.
-
-    You cannot create an instance of `EventQueue` directly. Each scanner creates an
-    instance when it is created.
-    """
-
+class MockEventQueue(EventQueue):
     def __init__(self, max_events):
-        self._events = MockDeque([], max_events)
-        self._overflowed = False
+        super().__init__(max_events)
 
     def get_into(self, event: MockEvent) -> bool:
-        """Store the next key transition event in the supplied event, if available,
-        and return ``True``.
-        If there are no queued events, do not touch ``event`` and return ``False``.
-
-        The advantage of this method over ``get()`` is that it does not allocate storage.
-        Instead you can reuse an existing ``Event`` object.
-
-        Note that the queue size is limited; see ``max_events`` in the constructor of
-        a scanner such as `Keys` or `KeyMatrix`.
-
-        :return: ``True`` if an event was available and stored, ``False`` if not.
-        :rtype: bool
-        """
         if not self._events:
             return False
         next_event = self._events.popleft()
@@ -94,24 +54,19 @@ class MockEventQueue:
         return True
 
     def __bool__(self) -> bool:
-        """``True`` if `len()` is greater than zero.
-        This is an easy way to check if the queue is empty.
-        """
-        return len(self._events) > 0
+        return super().__bool__()
 
     def __len__(self) -> int:
-        """Return the number of events currently in the queue. Used to implement ``len()``."""
-        return len(self._events)
+        return super().__len__()
 
     def keypad_eventqueue_record(self, key_number, current, time):
-        """Record a new event"""
         if len(self._events) == self._events.maxlen:
             self._overflowed = True
         else:
             self._events.append(MockEvent(key_number, current, time))
 
 
-class MockDeque:
+class deque:
     def __init__(self, queue: list, maxlen: int):
         self.queue = queue
         self.maxlen = maxlen
