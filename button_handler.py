@@ -23,12 +23,8 @@ Implementation Notes
 """
 
 # imports
-from keypad import Event
+from keypad import Event, EventQueue
 
-try:
-    from keypad import EventQueue
-except ImportError:
-    from keypad import _EventQueue as EventQueue  # noqa: F401
 try:
     from supervisor import ticks_ms  # type: ignore
 except ImportError:
@@ -37,7 +33,7 @@ except ImportError:
     start_time = time()
 
     def ticks_ms() -> int:
-        ((time() - start_time + 536.805, 912) * 1000) & _TICKS_MAX
+        return int((time() - start_time + 536805.912) * 1000) & _TICKS_MAX
 
 
 try:
@@ -45,7 +41,7 @@ try:
 except ImportError:
     pass
 
-__version__ = "2.0.0-beta.1"
+__version__ = "2.0.0-beta.2"
 __repo__ = "https://github.com/EGJ-Moorington/CircuitPython_Button_Handler.git"
 
 _TICKS_PERIOD = 1 << 29
@@ -209,7 +205,7 @@ class Button:
 
         .. attribute:: _press_start_time
             :type: float
-            :value: 0
+            :value: ticks_ms()
 
             The time (in milliseconds, tracked by :meth:`supervisor.ticks_ms`)
             at which the last button press began.
@@ -224,7 +220,7 @@ class Button:
 
         self._last_press_time = None
         self._press_count = 0
-        self._press_start_time = 0
+        self._press_start_time = ticks_ms()
         self._is_holding = False
         self._is_pressed = False
 
@@ -460,7 +456,7 @@ class ButtonHandler:
             The dictionary's keys should be the index numbers of the target buttons.
             For each button that doesn't have a :class:`ButtonInitConfig` attached to it, an object
             containing the default values is created.
-        :raise ValueError: if *button_amount* is smaller than 1.
+        :raise ValueError: if *button_amount* is smaller than 1, or if it is not an :type:`int`..
 
         .. attribute:: callable_inputs
             :type: set[ButtonInput]
@@ -485,7 +481,7 @@ class ButtonHandler:
 
             The :class:`keypad.EventQueue` object the handler should read events from.
         """
-        if button_amount < 1:
+        if button_amount < 1 or not isinstance(button_amount, int):
             raise ValueError("button_amount must be bigger than 0.")
 
         self.callable_inputs = callable_inputs
@@ -528,7 +524,7 @@ class ButtonHandler:
             if input_:
                 inputs.add(input_)
 
-        self._call_callbacks()
+        self._call_callbacks(inputs)
         return inputs
 
     def _call_callbacks(self, inputs: set[ButtonInput]) -> None:
@@ -590,8 +586,7 @@ class ButtonHandler:
         if event.pressed:  # Button just pressed
             button._is_pressed = True
             button._press_start_time = event.timestamp
-            if button._press_count < button.max_multi_press:
-                button._last_press_time = event.timestamp
+            button._last_press_time = event.timestamp
             button._press_count += 1
 
         else:  # Button just released
