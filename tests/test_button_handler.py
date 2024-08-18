@@ -17,28 +17,6 @@ class MockEvent(Event):
         super().__init__(key_number, pressed)
         self.timestamp = timestamp
 
-    def __eq__(self, other: object) -> bool:
-        return super().__eq__(other)
-
-    def __hash__(self) -> int:
-        return super().__hash__()
-
-    @property
-    def key_number(self):
-        return self._key_number
-
-    @key_number.setter
-    def key_number(self, value):
-        self._key_number = value
-
-    @property
-    def pressed(self):
-        return self._pressed
-
-    @pressed.setter
-    def pressed(self, value):
-        self._pressed = value
-
 
 class MockEventQueue(EventQueue):
     def __init__(self, max_events):
@@ -52,12 +30,6 @@ class MockEventQueue(EventQueue):
         event._pressed = next_event._pressed
         event.timestamp = next_event.timestamp
         return True
-
-    def __bool__(self) -> bool:
-        return super().__bool__()
-
-    def __len__(self) -> int:
-        return super().__len__()
 
     def keypad_eventqueue_record(self, key_number, current, time):
         if len(self._events) == self._events.maxlen:
