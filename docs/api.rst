@@ -6,5 +6,3 @@
 
 .. automodule:: button_handler
     :members:
-    :private-members:
-    :special-members: __eq__, __hash__, __str__

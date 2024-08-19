@@ -12,7 +12,7 @@ requires = [
 
 [project]
 name = "circuitpython-button-handler"
-description = "This helper library simplifies the usage of buttons with CircuitPython, by detecting and differentiating button inputs, returning a set of the inputs and calling their corresponding functions."
+description = "This helper library simplifies the usage of buttons with CircuitPython, by detecting and differentiating button inputs, and returning a list of the inputs."
 version = "0.0.0+auto.0"
 readme = "README.rst"
 authors = [
@@ -29,10 +29,6 @@ keywords = [
     "short",
     "long",
     "double",
-    "triple",
-    "multi",
-    "keypad",
-    "key",
     "press",
     "helper",
 ]

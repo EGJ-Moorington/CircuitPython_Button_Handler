@@ -6,15 +6,12 @@
 import time
 
 import board
-from keypad import Keys
 
 from button_handler import ButtonHandler
 
-scanner = Keys([board.D9], value_when_pressed=False)
-button_handler = ButtonHandler(scanner.events, set())
+button = ButtonHandler(board.D9)
 
 while True:
-    inputs = button_handler.update()
-    for input_ in inputs:
-        print(input_)
+    button.update()
+    print(button.is_pressed)
     time.sleep(0.01)
