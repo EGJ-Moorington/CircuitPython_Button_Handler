@@ -41,7 +41,7 @@ try:
 except ImportError:
     pass
 
-__version__ = "2.0.0-beta.2"
+__version__ = "2.0.0"
 __repo__ = "https://github.com/EGJ-Moorington/CircuitPython_Button_Handler.git"
 
 _TICKS_PERIOD = 1 << 29
@@ -301,13 +301,9 @@ class Button:
 class ButtonInput:
     """Defines a button's input's characteristics."""
 
-    InputAction: TypeAlias = Union[
-        Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str
-    ]
-
     def __init__(
         self,
-        action: InputAction,
+        action: Union[Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str],
         button_number: int = 0,
         callback: Callable[[], None] = lambda: None,
         timestamp: int = 0,
@@ -374,7 +370,9 @@ class ButtonInput:
         return self._action
 
     @action.setter
-    def action(self, action: InputAction):
+    def action(
+        self, action: Union[Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str]
+    ):
         if action in {"SHORT_PRESS", "LONG_PRESS", "HOLD"}:
             self._action = action
             return
@@ -546,7 +544,7 @@ class ButtonHandler:
             if not input_ in self.callable_inputs:
                 continue
             for callable_input in self.callable_inputs:
-                if callable_input is input_:
+                if callable_input == input_:
                     callable_input.callback()
 
     def _handle_buttons(self) -> set[ButtonInput]:

@@ -11,7 +11,7 @@ from keypad import Keys
 from button_handler import ButtonHandler
 
 scanner = Keys([board.D9], value_when_pressed=False)
-button_handler = ButtonHandler(scanner.events)
+button_handler = ButtonHandler(scanner.events, set())
 
 while True:
     inputs = button_handler.update()
