@@ -6,10 +6,9 @@
 import time
 
 import board
+from keypad import Keys
 
-from button_handler import ButtonHandler
-
-button = ButtonHandler(board.D9)
+from button_handler import ButtonHandler, ButtonInput
 
 
 def double_press():
@@ -24,24 +23,21 @@ def long_press():
     print("Long press detected!")
 
 
-def holding():
-    print("The button is being held down!")
+def hold():
+    print("The button began being held down!")
 
 
 actions = {
-    "DOUBLE_PRESS": double_press,
-    "SHORT_PRESS": short_press,
-    "LONG_PRESS": long_press,
-    "HOLDING": holding,
+    ButtonInput("DOUBLE_PRESS", callback=double_press),
+    ButtonInput("SHORT_PRESS", callback=short_press),
+    ButtonInput("LONG_PRESS", callback=long_press),
+    ButtonInput("HOLD", callback=hold),
 }
 
-
-def handle_input(input_):
-    actions.get(input_, lambda: None)()
+scanner = Keys([board.D9], value_when_pressed=False)
+button_handler = ButtonHandler(scanner.events, actions)
 
 
 while True:
-    inputs = button.update()
-    for input_ in inputs:
-        handle_input(input_)
+    button_handler.update()
     time.sleep(0.0025)
