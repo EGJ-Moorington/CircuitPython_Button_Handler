@@ -41,7 +41,7 @@ try:
 except ImportError:
     pass
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 __repo__ = "https://github.com/EGJ-Moorington/CircuitPython_Button_Handler.git"
 
 _TICKS_PERIOD = 1 << 29
@@ -301,9 +301,14 @@ class Button:
 class ButtonInput:
     """Defines a button's input's characteristics."""
 
+    SHORT_PRESS = 1
+    DOUBLE_PRESS = 2
+    LONG_PRESS = "L"
+    HOLD = "H"
+
     def __init__(
         self,
-        action: Union[Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str],
+        action: Union[int, str],
         button_number: int = 0,
         callback: Callable[[], None] = lambda: None,
         timestamp: int = 0,
@@ -370,22 +375,15 @@ class ButtonInput:
         return self._action
 
     @action.setter
-    def action(
-        self, action: Union[Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"], str]
-    ):
-        if action in {"SHORT_PRESS", "LONG_PRESS", "HOLD"}:
+    def action(self, action: Union[int, str]):
+        if action in {ButtonInput.LONG_PRESS, ButtonInput.HOLD}:
             self._action = action
             return
         try:
-            if action == "DOUBLE_PRESS":
-                action = "2_MULTI_PRESS"
-            if not action.endswith("_MULTI_PRESS"):
+            if not isinstance(action, int):
                 raise ValueError
-            num = int(action.split("_")[0])
-            if num < 1:
+            if action < 1:
                 raise ValueError
-            if num == 1:
-                action = "SHORT_PRESS"
             self._action = action
         except ValueError:
             raise ValueError(f"Invalid action: {action}.")
@@ -562,15 +560,13 @@ class ButtonHandler:
         current_time = ticks_ms()
         for button in self._buttons:
             if button._is_held(current_time):
-                inputs.add(ButtonInput("HOLD", button.button_number, timestamp=current_time))
+                inputs.add(
+                    ButtonInput(ButtonInput.HOLD, button.button_number, timestamp=current_time)
+                )
             else:
                 num = button._check_multi_press_timeout(current_time)
                 if num:
-                    inputs.add(
-                        ButtonInput(
-                            f"{num}_MULTI_PRESS", button.button_number, timestamp=current_time
-                        )
-                    )
+                    inputs.add(ButtonInput(num, button.button_number, timestamp=current_time))
         return inputs
 
     def _handle_event(self, event: Event) -> Union[ButtonInput, None]:
@@ -598,17 +594,21 @@ class ButtonHandler:
                 < button.long_press_threshold
             ):  # Short press
                 if not button.enable_multi_press:
-                    input_ = ButtonInput("SHORT_PRESS", event.key_number, timestamp=event.timestamp)
+                    input_ = ButtonInput(
+                        ButtonInput.SHORT_PRESS, event.key_number, timestamp=event.timestamp
+                    )
                 elif button._press_count == button.max_multi_press:
                     input_ = ButtonInput(
-                        f"{button.max_multi_press}_MULTI_PRESS",
+                        button.max_multi_press,
                         event.key_number,
                         timestamp=event.timestamp,
                     )
                 else:  # More short presses could follow
                     return None
             else:
-                input_ = ButtonInput("LONG_PRESS", event.key_number, timestamp=event.timestamp)
+                input_ = ButtonInput(
+                    ButtonInput.LONG_PRESS, event.key_number, timestamp=event.timestamp
+                )
                 button._is_holding = False
             button._last_press_time = None
             button._press_count = 0
