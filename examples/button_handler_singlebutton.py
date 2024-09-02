@@ -8,7 +8,7 @@ import time
 import board
 from keypad import Keys
 
-from button_handler import ButtonHandler, ButtonInitConfig, ButtonInput
+from button_handler import ButtonHandler, ButtonInput
 
 
 def double_press():

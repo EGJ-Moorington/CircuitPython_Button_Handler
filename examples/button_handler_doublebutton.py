@@ -34,7 +34,7 @@ def triple_press_0():
 
 def triple_press_1():
     if button_0.is_pressed:
-        triple_press_0_holding_1()
+        triple_press_1_holding_0()
         return
     print("Button 1 has been triple pressed!")
 

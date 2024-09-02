@@ -126,10 +126,10 @@ This simple script showcases the usage of this library using a single button.
 
 
     actions = {
-        ButtonInput("DOUBLE_PRESS", callback=double_press),
-        ButtonInput("SHORT_PRESS", callback=short_press),
-        ButtonInput("LONG_PRESS", callback=long_press),
-        ButtonInput("HOLD", callback=hold),
+        ButtonInput(ButtonInput.DOUBLE_PRESS, callback=double_press),
+        ButtonInput(ButtonInput.SHORT_PRESS, callback=short_press),
+        ButtonInput(ButtonInput.LONG_PRESS, callback=long_press),
+        ButtonInput(ButtonInput.HOLD, callback=hold),
     }
 
     scanner = Keys([board.D9], value_when_pressed=False)
