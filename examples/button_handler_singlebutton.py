@@ -8,7 +8,7 @@ import time
 import board
 from keypad import Keys
 
-from button_handler import ButtonHandler, ButtonInput
+from button_handler import ButtonHandler, ButtonInitConfig, ButtonInput
 
 
 def double_press():
@@ -28,10 +28,10 @@ def hold():
 
 
 actions = {
-    ButtonInput("DOUBLE_PRESS", callback=double_press),
-    ButtonInput("SHORT_PRESS", callback=short_press),
-    ButtonInput("LONG_PRESS", callback=long_press),
-    ButtonInput("HOLD", callback=hold),
+    ButtonInput(ButtonInput.DOUBLE_PRESS, callback=double_press),
+    ButtonInput(ButtonInput.SHORT_PRESS, callback=short_press),
+    ButtonInput(ButtonInput.LONG_PRESS, callback=long_press),
+    ButtonInput(ButtonInput.HOLD, callback=hold),
 }
 
 scanner = Keys([board.D9], value_when_pressed=False)
