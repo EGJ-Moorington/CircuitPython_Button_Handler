@@ -83,12 +83,12 @@ def button(config) -> Button:
 
 @pytest.fixture
 def input_() -> ButtonInput:
-    return ButtonInput("SHORT_PRESS", 3, callback, timestamp=time)
+    return ButtonInput(ButtonInput.SHORT_PRESS, 3, callback, timestamp=time)
 
 
 @pytest.fixture
 def inputs(input_) -> set[ButtonInput]:
-    return {input_, ButtonInput("LONG_PRESS", callback=callback)}
+    return {input_, ButtonInput(ButtonInput.LONG_PRESS, callback=callback)}
 
 
 @pytest.fixture
@@ -141,34 +141,30 @@ class TestButton:
 
 class TestButtonInput:
     def test_init(self, input_):
-        assert input_.action == "SHORT_PRESS"
+        assert input_.action == ButtonInput.SHORT_PRESS
         assert input_.button_number == 3
         assert input_.callback() == None
         assert input_.timestamp == time
 
         with pytest.raises(ValueError):
-            input_.action = "0_MULTI_PRESS"
+            input_.action = 0
 
     def test_valid_action(self, input_):
         assert input_._action == input_.action
-        input_.action = "LONG_PRESS"
-        assert input_.action == "LONG_PRESS"
-        input_.action = "DOUBLE_PRESS"
-        assert input_.action == "2_MULTI_PRESS"
-        input_.action = "1_MULTI_PRESS"
-        assert input_.action == "SHORT_PRESS"
-        input_.action = "3_MULTI_PRESS"
-        assert input_.action == "3_MULTI_PRESS"
+        input_.action = ButtonInput.LONG_PRESS
+        assert input_.action == ButtonInput.LONG_PRESS
+        input_.action = 3
+        assert input_.action == 3
 
     @pytest.mark.parametrize(
         "action",
         {
-            "0_MULTI_PRESS",
-            "_MULTI_PRESS",
-            "w_MULTI_PRESS",
-            "_MULTI_PRESS_",
-            "-1_MULTI_PRESS",
-            "3.0_MULTI_PRESS",
+            0,
+            "",
+            "w",
+            None,
+            -1,
+            3.0,
         },
     )
     def test_invalid_action(self, input_, action):
@@ -176,11 +172,11 @@ class TestButtonInput:
             input_.action = action
 
     def test_dunder(self, input_: ButtonInput, time):
-        assert input_ == ButtonInput("SHORT_PRESS", 3, timestamp=time * 2)
+        assert input_ == ButtonInput(ButtonInput.SHORT_PRESS, 3, timestamp=time * 2)
 
         assert hash(input_) == hash((input_.action, input_.button_number))
 
-        assert str(input_) == "SHORT_PRESS on button 3"
+        assert str(input_) == f"{ButtonInput.SHORT_PRESS} on button 3"
 
 
 class TestButtonHandler:
@@ -212,7 +208,7 @@ class TestButtonHandler:
     def test__call_callbacks(self, inputs, button_handler: ButtonHandler):
         global call_amount  # noqa: PLW0603
         call_amount = 0
-        inputs.add(ButtonInput("HOLD"))
+        inputs.add(ButtonInput(ButtonInput.HOLD))
         button_handler._call_callbacks(inputs)
         assert call_amount == 2
 
@@ -224,13 +220,13 @@ class TestButtonHandler:
         button._is_pressed = True
         button._press_start_time = time - button.long_press_threshold * 2
         inputs = button_handler._handle_buttons()
-        assert inputs == {ButtonInput("HOLD", 2)}
+        assert inputs == {ButtonInput(ButtonInput.HOLD, 2)}
 
         button = button_handler.buttons[3]
         button._press_count = 3
         button._last_press_time = time - button.multi_press_interval * 2
         inputs = button_handler._handle_buttons()
-        assert inputs == {ButtonInput("3_MULTI_PRESS", 3)}
+        assert inputs == {ButtonInput(3, 3)}
 
     def test__handle_event(self, time, button_handler: ButtonHandler):
         button = button_handler.buttons[1]
@@ -247,16 +243,16 @@ class TestButtonHandler:
         button._press_start_time = time - button.long_press_threshold // 2
         button.enable_multi_press = False
         event = MockEvent(1, False, time)
-        assert button_handler._handle_event(event) == ButtonInput("SHORT_PRESS", 1)
+        assert button_handler._handle_event(event) == ButtonInput(ButtonInput.SHORT_PRESS, 1)
 
         button.enable_multi_press = True
         assert button_handler._handle_event(event) == None
 
         button._press_count = 4
-        assert button_handler._handle_event(event) == ButtonInput("4_MULTI_PRESS", 1)
+        assert button_handler._handle_event(event) == ButtonInput(4, 1)
 
         button._press_start_time = time - button.long_press_threshold * 2
-        assert button_handler._handle_event(event) == ButtonInput("LONG_PRESS", 1)
+        assert button_handler._handle_event(event) == ButtonInput(ButtonInput.LONG_PRESS, 1)
 
         assert button._last_press_time == None
         assert button._press_count == 0
@@ -271,20 +267,20 @@ class TestButtonHandler:
         assert input_set == set()
         while input_set == set() and timestamp_diff(ticks_ms(), time) < 100:
             input_set = button_handler.update()
-        assert input_set.pop() == ButtonInput("SHORT_PRESS", 2)
+        assert input_set.pop() == ButtonInput(ButtonInput.SHORT_PRESS, 2)
 
         # Multi press disabled
         button = button_handler.buttons[1]
         assert self.sim_press(button, button_handler, "SHORT_PRESS", 4) == set()
-        assert button_handler.update().pop() == ButtonInput("SHORT_PRESS", 1)
+        assert button_handler.update().pop() == ButtonInput(ButtonInput.SHORT_PRESS, 1)
 
         # Finish max multi press
         self.sim_press(button, button_handler, "SHORT_PRESS")
         button._press_count = 4
         button.enable_multi_press = True
-        assert button_handler.update().pop() == ButtonInput("4_MULTI_PRESS", 1)
+        assert button_handler.update().pop() == ButtonInput(4, 1)
 
         # Long press
         button._press_start_time = time - button.long_press_threshold * 2
         queue.keypad_eventqueue_record(1, False, time)
-        assert button_handler.update().pop() == ButtonInput("LONG_PRESS", 1)
+        assert button_handler.update().pop() == ButtonInput(ButtonInput.LONG_PRESS, 1)

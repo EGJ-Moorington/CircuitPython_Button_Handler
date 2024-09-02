@@ -102,14 +102,14 @@ def long_press_1_holding_0():
 config = ButtonInitConfig(max_multi_press=3)
 scanner = Keys([board.D9, board.A2], value_when_pressed=False)
 callback_inputs = {
-    ButtonInput("DOUBLE_PRESS", 0, double_press_0),
-    ButtonInput("DOUBLE_PRESS", 1, double_press_1),
-    ButtonInput("3_MULTI_PRESS", 0, triple_press_0),
-    ButtonInput("3_MULTI_PRESS", 1, triple_press_1),
-    ButtonInput("SHORT_PRESS", 0, short_press_0),
-    ButtonInput("SHORT_PRESS", 1, short_press_1),
-    ButtonInput("LONG_PRESS", 0, long_press_0),
-    ButtonInput("LONG_PRESS", 1, long_press_1),
+    ButtonInput(ButtonInput.DOUBLE_PRESS, 0, double_press_0),
+    ButtonInput(ButtonInput.DOUBLE_PRESS, 1, double_press_1),
+    ButtonInput(3, 0, triple_press_0),
+    ButtonInput(3, 1, triple_press_1),
+    ButtonInput(ButtonInput.SHORT_PRESS, 0, short_press_0),
+    ButtonInput(ButtonInput.SHORT_PRESS, 1, short_press_1),
+    ButtonInput(ButtonInput.LONG_PRESS, 0, long_press_0),
+    ButtonInput(ButtonInput.LONG_PRESS, 1, long_press_1),
 }
 button_handler = ButtonHandler(scanner.events, callback_inputs, 2, {0: config, 1: config})
 
