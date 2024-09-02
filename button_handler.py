@@ -73,22 +73,22 @@ class ButtonInitConfig:
     ) -> None:
         """
         :param bool enable_multi_press: Sets :attr:`.enable_multi_press`
-            (whether to track multi presses).
+            (whether to track multi-presses).
         :param float multi_press_interval: Sets :attr:`.multi_press_interval`
-            (the time frame within which two presses should occur to count as a multi press).
+            (the time frame within which two presses should occur to count as a multi-press).
         :param float long_press_threshold: Sets :attr:`.long_press_threshold`
             (the minimum length of a press to count as a long press).
         :param int max_multi_press: Sets :attr:`.max_multi_press`
-            (the maximum amount of presses a multi press can have).
+            (the maximum amount of presses a multi-press can have).
 
         .. attribute:: enable_multi_press
             :type: bool
             :value: enable_multi_press = True
 
             Whether to account for the possibility of another short press
-            following a short press and counting as a multi press.
+            following a short press and counting as a multi-press.
             If set to false, :meth:`ButtonHandler.update`
-            returns ``SHORT_PRESS`` immediately after a short press.
+            returns a short press :class:`ButtonInput` object immediately after a short press.
 
         .. attribute:: long_press_threshold
             :type: float
@@ -101,16 +101,16 @@ class ButtonInitConfig:
             :type: int
             :value: max_multi_press = 2
 
-            The maximum amount of button presses that a multi press can be.
-            :meth:`ButtonHandler.update` returns the appropiate ``_MULTI_PRESS`` immediaetly after
-            the button has been pressed this many times.
+            The maximum amount of button presses that a multi-press can be.
+            :meth:`ButtonHandler.update` returns the appropiate multi-press :class:`ButtonInput`
+            object immediaetly after the button has been pressed this many times.
 
         .. attribute:: multi_press_interval
             :type: float
             :value: multi_press_interval = 175
 
             The time frame from a button release within which
-            another release should occur to count as a multi press.
+            another release should occur to count as a multi-press.
         """
         self.enable_multi_press = enable_multi_press
         self.long_press_threshold = long_press_threshold
@@ -137,8 +137,9 @@ class Button:
             :value: config.enable_multi_press = True
 
             Whether to account for the possibility of another short press
-            following a short press and counting that as a multi press. If set to false,
-            :meth:`ButtonHandler.update` returns ``SHORT_PRESS`` immediately after a short press.
+            following a short press and counting that as a multi-press. If set to false,
+            :meth:`ButtonHandler.update` returns a short press :class:`ButtonInput`
+            object immediately after a short press.
 
         .. attribute:: long_press_threshold
             :type: float
@@ -151,16 +152,16 @@ class Button:
             :type: int
             :value: config.max_multi_press = 2
 
-            The maximum amount of button presses that a multi press can be.
-            :meth:`ButtonHandler.update` returns the appropiate ``_MULTI_PRESS`` immediaetly after
-            the button has been pressed this many times.
+            The maximum amount of button presses that a multi-press can be.
+            :meth:`ButtonHandler.update` returns the appropiate multi-press :class:`ButtonInput`
+            object immediaetly after the button has been pressed this many times.
 
         .. attribute:: multi_press_interval
             :type: float
             :value: config.multi_press_interval = 175
 
             The time frame from a button release within which
-            another release should occur to count as a multi press.
+            another release should occur to count as a multi-press.
 
         .. caution:: Attributes with a *leading underscore (_)* are meant for **internal use only**,
             and accessing them may cause **unexpected behaviour**. Please consider accessing
@@ -192,7 +193,7 @@ class Button:
             :value: None
 
             The time (in miliseconds, tracked by :meth:`supervisor.ticks_ms`) that has passed since
-            the start of the previous press of a multi press. It is set to :type:`None`
+            the start of the previous press of a multi-press. It is set to :type:`None`
             after the time specified by :attr:`.multi_press_interval` has passed.
 
         .. attribute:: _press_count
@@ -200,7 +201,7 @@ class Button:
             :value: 0
 
             The amount of times the button has been pressed since the last
-            multi press ended. It is set to 0 if the time set
+            multi-press ended. It is set to 0 if the time set
             by :attr:`.multi_press_interval` passes after a short press.
 
         .. attribute:: _press_start_time
@@ -257,12 +258,12 @@ class Button:
         .. caution:: Methods with a *leading underscore (_)* are meant for **internal use only**,
             and calling them may cause **unexpected behaviour**. Please refrain from using them.
 
-        Check whether a multi press has ended.
-        If it has, return the amount of times the button was pressed in that multi press.
+        Check whether a multi-press has ended.
+        If it has, return the amount of times the button was pressed in that multi-press.
 
         :param int current_time: The current time, provided by :meth:`supervisor.ticks_ms`.
-        :return: The amount of times the button was pressed in a multi press,
-            if a multi press has ended.
+        :return: The amount of times the button was pressed in a multi-press,
+            if a multi-press has ended.
         :rtype: int or None
         """
         if (
@@ -303,8 +304,8 @@ class ButtonInput:
 
     SHORT_PRESS = 1
     DOUBLE_PRESS = 2
-    LONG_PRESS = "L"
     HOLD = "H"
+    LONG_PRESS = "L"
 
     def __init__(
         self,
@@ -322,7 +323,13 @@ class ButtonInput:
         :param int timestamp: Sets :attr:`timestamp` (the time at which the input was performed).
 
         .. type:: InputAction
-            :canonical: Literal["SHORT_PRESS", "LONG_PRESS", "HOLD", "DOUBLE_PRESS"] | str
+            :canonical: int | str
+
+            Represents the action the :class:`ButtonInput` object represents.
+            Using a constant defined by :class:`ButtonInput` when available is recommended.
+            To represent a multi-press, use the number of presses in that multi-press.
+            Available constants are :const:`SHORT_PRESS`, :const:`DOUBLE_PRESS`,
+            :const:`HOLD` and :const:`LONG_PRESS`.
 
         .. attribute:: button_number
             :type: int
@@ -343,6 +350,37 @@ class ButtonInput:
 
             The timestamp (in milliseconds, provided by :meth:`supervisor.ticks_ms`)
             at which the input was performed.
+
+        .. warning:: Variables written in *upper case with underscores* are constants and
+            should not be modified. Doing so may cause **unexpected behaviour**.
+
+        .. data:: SHORT_PRESS
+            :type: int
+            :value: 1
+
+            Represents a short press to pass as an argument to
+            parameter `action` in :class:`ButtonInput`.
+
+        .. data:: DOUBLE_PRESS
+            :type: int
+            :value: 2
+
+            Represents a double press to pass as an argument to
+            parameter `action` in :class:`ButtonInput`.
+
+        .. data:: HOLD
+            :type: str
+            :value: "H"
+
+            Represents a hold action to pass as an argument to
+            parameter `action` in :class:`ButtonInput`.
+
+        .. data:: LONG_PRESS
+            :type: str
+            :value: "L"
+
+            Represents a long press to pass as an argument to
+            parameter `action` in :class:`ButtonInput`.
 
         .. caution:: Attributes with a *leading underscore (_)* are meant for
             **internal use only**, and accessing them may cause **unexpected behaviour**.
@@ -366,10 +404,9 @@ class ButtonInput:
 
         :type: InputAction
         :param InputAction action: The action associated with the input.
-        :raise ValueError: if action is not a valid action. Valid actions are ``LONG_PRESS``,
-            ``HOLD``, ``SHORT_PRESS`` (exactly the same as ``1_MULTI_PRESS``),
-            ``DOUBLE_PRESS`` (exactly the same as ``2_MULTI_PRESS``) and
-            ``x_MULTI_PRESS`` where x is an :type:`int` bigger than 0.
+        :raise ValueError: if *action* is not a valid action. Valid actions are
+            :const:`SHORT_PRESS`, :const:`DOUBLE_PRESS`, :const:`HOLD`, :const:`LONG_PRESS`
+            and any :type:`int` bigger than 0.
 
         """
         return self._action
@@ -444,15 +481,15 @@ class ButtonHandler:
         :param keypad.EventQueue event_queue: Sets :attr:`_event_queue`
             (the :class:`keypad.EventQueue` object the handler should read events from).
         :param set[ButtonInput] callable_inputs: Sets :attr:`callable_inputs`
-            (the :class:`ButtonInitConfig` objects used to define the callback functions).
+            (the :class:`ButtonInput` objects used to define the callback functions).
         :param int button_amount: The amount of buttons scanned by the :mod:`keypad` scanner
-            that created the event_queue parameter's argument :class:`keypad.EventQueue` object.
+            that created the *event_queue* parameter's argument :class:`keypad.EventQueue` object.
         :param dict[int, ButtonInitConfig] config: A dictionary containing
             :class:`ButtonInitConfig` objects used to initialise :class:`Button` objects.
             The dictionary's keys should be the index numbers of the target buttons.
             For each button that doesn't have a :class:`ButtonInitConfig` attached to it, an object
             containing the default values is created.
-        :raise ValueError: if *button_amount* is smaller than 1, or if it is not an :type:`int`..
+        :raise ValueError: if *button_amount* is smaller than 1, or if it is not an :type:`int`.
 
         .. attribute:: callable_inputs
             :type: set[ButtonInput]
@@ -505,7 +542,7 @@ class ButtonHandler:
 
     def update(self) -> set[ButtonInput]:
         """
-        Check if any button ended a multi press since the last time this method was called,
+        Check if any button ended a multi-press since the last time this method was called,
         process the next :class:`keypad.Event` in :attr:`_event_queue`, call all the relevant
         callback functions and return a set of the detected :class:`ButtonInput`\\ s.
 
@@ -551,7 +588,7 @@ class ButtonHandler:
             and calling them may cause **unexpected behaviour**. Please refrain from using them.
 
         Check if any button began being held down since the last time this mehod was called
-        and if any multi press ended, and return every detected :class:`ButtonInput`.
+        and if any multi-press ended, and return every detected :class:`ButtonInput`.
 
         :return: A set containing every detected :class:`ButtonInput`.
         :rtype: set[ButtonInput]
