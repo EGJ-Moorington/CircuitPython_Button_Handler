@@ -102,7 +102,7 @@ class ButtonInitConfig:
             :value: max_multi_press = 2
 
             The maximum amount of button presses that a multi-press can be.
-            :meth:`ButtonHandler.update` returns the appropiate multi-press :class:`ButtonInput`
+            :meth:`ButtonHandler.update` returns the appropriate multi-press :class:`ButtonInput`
             object immediaetly after the button has been pressed this many times.
 
         .. attribute:: multi_press_interval
@@ -153,7 +153,7 @@ class Button:
             :value: config.max_multi_press = 2
 
             The maximum amount of button presses that a multi-press can be.
-            :meth:`ButtonHandler.update` returns the appropiate multi-press :class:`ButtonInput`
+            :meth:`ButtonHandler.update` returns the appropriate multi-press :class:`ButtonInput`
             object immediaetly after the button has been pressed this many times.
 
         .. attribute:: multi_press_interval
@@ -333,20 +333,20 @@ class ButtonInput:
 
         .. attribute:: button_number
             :type: int
-            :value: button_number = 0
+            :value: 0
 
             The index number of the button associated with the input.
 
         .. attribute:: callback
             :type: Callable[[], None]
-            :value: callback = lambda: None
+            :value: lambda: None
 
             The function to call when the input is detected
-            and returned by :meth:`ButtonHandler.update`
+            and returned by :meth:`ButtonHandler.update`.
 
         .. attribute:: timestamp
             :type: int
-            :value: timestamp = 0
+            :value: 0
 
             The timestamp (in milliseconds, provided by :meth:`supervisor.ticks_ms`)
             at which the input was performed.
@@ -450,7 +450,7 @@ class ButtonInput:
         :return: The hash value of the input.
         :rtype: int
 
-        .. seealso:: :meth:`__eq__` - two :class:`ButtonInput` objects hash to the same value
+        .. seealso:: :meth:`__eq__` — two :class:`ButtonInput` objects hash to the same value
             if they are equal.
         """
         return hash((self.action, self.button_number))
