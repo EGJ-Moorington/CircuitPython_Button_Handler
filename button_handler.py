@@ -41,7 +41,7 @@ try:
 except ImportError:
     pass
 
-__version__ = "3.0.0"
+__version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/EGJ-Moorington/CircuitPython_Button_Handler.git"
 
 _TICKS_PERIOD = 1 << 29
