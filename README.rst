@@ -153,3 +153,61 @@ Contributing
 Contributions are welcome! Please read our `Code of Conduct
 <https://github.com/EGJ-Moorington/CircuitPython_Button_Handler/blob/HEAD/CODE_OF_CONDUCT.md>`_
 before contributing to help this project stay welcoming.
+
+This repository is set up with tools that assist in development by automatically formatting code, enforcing standards,
+and fixing issues where possible.
+
+For these tools to run automatically before committing, `pre-commit <https://pre-commit.com/>`_
+has to be installed. This can be done in a virtual environment in order to maintain a cleaner development setup.
+Using a virtual environment isolates dependencies, ensuring they don't conflict with other projects.
+
+The following steps explain how to install ``pre-commit`` in a Python virtual environment.
+
+1. **Ensure Python is installed in your system.**
+
+   You can check your version of `Python  <https://www.python.org/downloads/>`_
+   with the following command:
+
+   .. code-block:: shell
+
+       python --version
+
+2. **Create a Python virtual environment.**
+
+   To make a virtual environment of name ``.venv`` in the current directory, run:
+
+   .. code-block:: shell
+
+       python -m venv .venv
+
+3. **Activate the virtual environment.**
+
+   * On Windows, run:
+
+     .. code-block:: shell
+
+         .\.venv\Scripts\activate
+
+   * On Linux or macOS, run:
+
+     .. code-block:: shell
+
+         source .venv/bin/activate
+
+   To avoid repeating this step every time a terminal is opened in this directory,
+   configure your IDE to use the ``.venv`` virtual environment as the default interpreter.
+   In Visual Studio Code, this can be done by opening the command palette, typing
+   ``Python: Select Interpreter`` and selecting the ``.venv`` virtual environment.
+
+4. **Install pre-commit.**
+
+   This can easily be achieved by executing:
+
+   .. code-block:: shell
+
+       pip install pre-commit
+
+   After installing ``pre-commit``, the necessary hooks are installed on the next ``git commit``
+   or the next time ``pre-commit run`` is executed.
+
+
