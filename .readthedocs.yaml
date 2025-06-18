@@ -13,6 +13,10 @@ build:
   tools:
     python: "3"
 
+sphinx:
+  # Path to the Sphinx configuration file
+  configuration: docs/conf.py
+
 python:
   install:
     - requirements: docs/requirements.txt
