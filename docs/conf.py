@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
+# Copyright (c) 2025 EGJ Moorington
 #
 # SPDX-License-Identifier: MIT
 
