@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2021 Melissa LeBlanc-Williams for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2025 EGJ Moorington
 #
 # SPDX-License-Identifier: Unlicense
 
@@ -12,6 +13,10 @@ build:
   os: ubuntu-lts-latest
   tools:
     python: "3"
+
+sphinx:
+  # Path to the Sphinx configuration file
+  configuration: docs/conf.py
 
 python:
   install:
