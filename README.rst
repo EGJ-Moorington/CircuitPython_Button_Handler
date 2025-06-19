@@ -154,60 +154,126 @@ Contributions are welcome! Please read our `Code of Conduct
 <https://github.com/EGJ-Moorington/CircuitPython_Button_Handler/blob/HEAD/CODE_OF_CONDUCT.md>`_
 before contributing to help this project stay welcoming.
 
-This repository is set up with tools that assist in development by automatically formatting code, enforcing standards,
-and fixing issues where possible.
+The easiest way to contribute to the repository is by `creating an issue <https://github.com/EGJ-Moorington/CircuitPython_Button_Handler/issues/new>`_.
+Add a concise title and then explain the issue or suggestion in more detail in the description. This is helpful even if you do not intend to develop a fix.
+If you wish to do so, however, the repository must first be forked.
 
-For these tools to run automatically before committing, `pre-commit <https://pre-commit.com/>`_
-has to be installed. This can be done in a virtual environment in order to maintain a cleaner development setup.
-Using a virtual environment isolates dependencies, ensuring they don't conflict with other projects.
+Forking the repository
+----------------------
 
-The following steps explain how to install ``pre-commit`` in a Python virtual environment.
+In order to add commits to this repository, it must be `forked <https://github.com/EGJ-Moorington/CircuitPython_Button_Handler/fork>`_ first.
+This creates a copy of the repository you can edit. Make sure to deselect "Copy the ``main`` branch only".
 
-1. **Ensure Python is installed in your system.**
+The following steps explain the recommended approach to working on a fork. Git needs to be installed for this.
 
-   You can check your version of `Python  <https://www.python.org/downloads/>`_
-   with the following command:
+1. **Clone the repository.**
 
-   .. code-block:: shell
-
-       python --version
-
-2. **Create a Python virtual environment.**
-
-   To make a virtual environment of name ``.venv`` in the current directory, run:
+   Open a terminal in the directory where you wish to clone the fork, and then run the following:
 
    .. code-block:: shell
 
-       python -m venv .venv
+      git clone https://github.com/<your-github-username>/CircuitPython_Button_Handler.git
 
-3. **Activate the virtual environment.**
+   Keep in mind the URL will be different if you changed the fork's name.
 
-   * On Windows, run:
+2. **Set pre-commit up.**
 
-     .. code-block:: shell
+   This repository is set up with tools that assist in development by automatically formatting code, enforcing code standards
+   and fixing issues where possible.
 
-         .\.venv\Scripts\activate
+   For these tools to run automatically before committing, `pre-commit <https://pre-commit.com/>`_
+   has to be installed. This can be done in a virtual environment in order to maintain a cleaner development setup.
+   Using a virtual environment isolates dependencies, ensuring they don't conflict with other projects.
 
-   * On Linux or macOS, run:
+   To install ``pre-commit`` in a Python virtual environment:
 
-     .. code-block:: shell
+   1. **Ensure Python is installed in your system.**
 
-         source .venv/bin/activate
+      You can check your version of `Python  <https://www.python.org/downloads/>`_
+      with the following command:
 
-   To avoid repeating this step every time a terminal is opened in this directory,
-   configure your IDE to use the ``.venv`` virtual environment as the default interpreter.
-   In Visual Studio Code, this can be done by opening the command palette, typing
-   ``Python: Select Interpreter`` and selecting the ``.venv`` virtual environment.
+      .. code-block:: shell
 
-4. **Install pre-commit.**
+         python --version
 
-   This can easily be achieved by executing:
+   2. **Create a Python virtual environment.**
+
+      To make a virtual environment of name ``.venv`` in the current directory, run:
+
+      .. code-block:: shell
+
+         python -m venv .venv
+
+   3. **Activate the virtual environment.**
+
+      * On Windows, run:
+
+        .. code-block:: shell
+
+           .\.venv\Scripts\activate
+
+      * On Linux or macOS, run:
+
+        .. code-block:: shell
+
+           source .venv/bin/activate
+
+      To avoid repeating this step every time a terminal is opened in this directory,
+      configure your IDE to use the ``.venv`` virtual environment as the default interpreter.
+      In Visual Studio Code, this can be done by opening the command palette, typing
+      ``Python: Select Interpreter`` and selecting the ``.venv`` virtual environment.
+
+   4. **Install pre-commit.**
+
+      This can easily be achieved by executing:
+
+      .. code-block:: shell
+
+         pip install pre-commit
+         pre-commit install
+
+      After installing ``pre-commit``, the necessary hooks are installed on the next ``git commit``
+      or the next time ``pre-commit run`` is executed.
+
+3. **Create a new branch.**
+
+   To make a new branch from the ``dev`` branch:
 
    .. code-block:: shell
 
-       pip install pre-commit
+      git checkout dev
+      git branch -b <branch-name>
 
-   After installing ``pre-commit``, the necessary hooks are installed on the next ``git commit``
-   or the next time ``pre-commit run`` is executed.
+   **For consistency, please name the branch the same as the issue it addresses with the number of the issue preceding the name.
+   Write the name in** ``kebab-case`` **and with no special characters (underscores are allowed).**
 
+   For example, the branch for `issue #26 <https://github.com/EGJ-Moorington/CircuitPython_Button_Handler/issues/26>`_
+   "Update ``.readthedocs.yaml`` with Sphinx key" was "26-update-readthedocsyaml-with-sphinx-key".
 
+4. **Commit your changes.**
+
+   After adding your changes, commit them to the new branch by executing:
+
+   .. code-block:: shell
+
+      git add .
+      git commit
+
+   When ready, push the changes to GitHub with the following commands:
+
+   .. code-block:: shell
+
+      git remote add origin https://github.com/<your-github-username>/CircuitPython_Button_Handler.git
+      git push --set-upstream origin <branch-name>
+
+5. **Open a pull request.**
+
+   Upon opening (or refreshing) the fork's GitHub page, a message should be visible close to the top of the page:
+
+      This branch is 1 commit ahead of ``EGJ-Moorington/CircuitPython_Button_Handler:main``.
+
+   Firstly, ensure the branch is up to date by pressing "Sync fork". Then, select "Contribute" > "Open pull request".
+
+   The page will show "Open a pull request". Make sure to select ``base: dev`` and ``compare: <your-branch-name>`` in the dropdowns.
+
+   Write a brief title and then explain the changes in the description. Finish by using a `closing keyword <https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-     to-an-issue>`_ for your issue.
