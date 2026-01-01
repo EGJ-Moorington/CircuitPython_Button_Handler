@@ -89,10 +89,11 @@ Or the following command to update an existing version:
 Usage Example
 =============
 
-This simple script showcases the usage of this library using a single
-button connected to pin D9, with custom ``multi_press_interval`` and
-``max_multi_press`` settings.  See the ``examples`` directory for
-more complex examples.
+This simple script showcases the usage of this library using a single button.
+
+See the ``examples`` directory for more complex examples, including
+triple presses, configuring button press delays, and supporting
+multiple buttons.
 
 +---------------+
 | Button wiring |
@@ -116,10 +117,6 @@ more complex examples.
         print("Double press detected!")
 
 
-    def triple_press():
-        print("Triple press detected!")
-
-
     def short_press():
         print("Short press detected!")
 
@@ -132,22 +129,21 @@ more complex examples.
         print("The button began being held down!")
 
 
-    callback_inputs = {
-        ButtonInput(ButtonInput.DOUBLE_PRESS, 0, double_press),
-        ButtonInput(3, 0, triple_press),
-        ButtonInput(ButtonInput.SHORT_PRESS, 0, short_press),
-        ButtonInput(ButtonInput.LONG_PRESS, 0, long_press),
-        ButtonInput(ButtonInput.HOLD, 0, hold),
+    actions = {
+        ButtonInput(ButtonInput.DOUBLE_PRESS, callback=double_press),
+        ButtonInput(ButtonInput.SHORT_PRESS, callback=short_press),
+        ButtonInput(ButtonInput.LONG_PRESS, callback=long_press),
+        ButtonInput(ButtonInput.HOLD, callback=hold),
     }
 
+    scanner = Keys([board.D9], value_when_pressed=False)
+    button_handler = ButtonHandler(scanner.events, actions)
 
-    config = ButtonInitConfig(multi_press_interval=500, max_multi_press=3)
-    scanner = Keys((board.D9,), value_when_pressed=False, pull=True)
-    button_handler = ButtonHandler(scanner.events, callback_inputs, 1, {0: config})
 
     while True:
         button_handler.update()
         time.sleep(0.0025)
+
 
 Documentation
 =============
