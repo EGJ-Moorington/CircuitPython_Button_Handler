@@ -91,6 +91,10 @@ Usage Example
 
 This simple script showcases the usage of this library using a single button.
 
+See the ``examples`` directory for more complex examples, including
+triple presses, configuring button press delays, and supporting
+multiple buttons.
+
 +---------------+
 | Button wiring |
 +===============+
@@ -106,7 +110,7 @@ This simple script showcases the usage of this library using a single button.
     import board
     from keypad import Keys
 
-    from button_handler import ButtonHandler
+    from button_handler import ButtonHandler, ButtonInitConfig, ButtonInput
 
 
     def double_press():
@@ -126,10 +130,10 @@ This simple script showcases the usage of this library using a single button.
 
 
     actions = {
-        "DOUBLE_PRESS": double_press,
-        "SHORT_PRESS": short_press,
-        "LONG_PRESS": long_press,
-        "HOLD": hold,
+        ButtonInput(ButtonInput.DOUBLE_PRESS, callback=double_press),
+        ButtonInput(ButtonInput.SHORT_PRESS, callback=short_press),
+        ButtonInput(ButtonInput.LONG_PRESS, callback=long_press),
+        ButtonInput(ButtonInput.HOLD, callback=hold),
     }
 
     scanner = Keys([board.D9], value_when_pressed=False)
@@ -139,6 +143,7 @@ This simple script showcases the usage of this library using a single button.
     while True:
         button_handler.update()
         time.sleep(0.0025)
+
 
 Documentation
 =============
