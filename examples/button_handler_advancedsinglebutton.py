@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
-# SPDX-FileCopyrightText: Copyright (c) 2024 EGJ Moorington
-# SPDX-FileCopyrightText: Copyright (c) 2024 George Hartzell
+# SPDX-FileCopyrightText: Copyright (c) 2026 EGJ Moorington
+# SPDX-FileCopyrightText: Copyright (c) 2026 George Hartzell
 #
 # SPDX-License-Identifier: Unlicense
 
@@ -9,6 +9,7 @@
 # - handling a triple press
 # - setting configurations for buttons (e.g. multi_press_interval)
 #
+
 import time
 
 import board
@@ -49,6 +50,7 @@ callback_inputs = {
 config = ButtonInitConfig(multi_press_interval=500, max_multi_press=3)
 scanner = Keys((board.D9,), value_when_pressed=False, pull=True)
 button_handler = ButtonHandler(scanner.events, callback_inputs, 1, {0: config})
+
 
 while True:
     button_handler.update()

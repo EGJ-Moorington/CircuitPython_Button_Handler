@@ -32,6 +32,23 @@ This simple script showcases the usage of this library using a single button.
     :caption: examples/button_handler_singlebutton.py
     :linenos:
 
+Advanced single button
+----------------------
+
+This advanced script demonstrates how to handle triple presses and configure a button.
+
++---------------+
+| Button wiring |
++===============+
+| GND           |
++---------------+
+| D9            |
++---------------+
+
+.. literalinclude:: ../examples/button_handler_advancedsinglebutton.py
+    :caption: examples/button_handler_advancedsinglebutton.py
+    :linenos:
+
 Double button
 -------------
 
