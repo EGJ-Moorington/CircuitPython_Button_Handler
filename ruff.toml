@@ -7,7 +7,7 @@ target-version = "py38"
 line-length = 100
 
 [per-file-target-version]
-"{docs,tests}/**/*.py" = "py313"
+"{docs,scripts,tests}/**/*.py" = "py313"
 
 [lint]
 select = ["I", "PL", "UP"]

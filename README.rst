@@ -103,7 +103,15 @@ multiple buttons.
 | D9            |
 +---------------+
 
+.. include-example::: examples/button_handler_singlebutton.py
+    :language: python
+
 .. code-block:: python
+
+    # SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
+    # SPDX-FileCopyrightText: Copyright (c) 2024 EGJ Moorington
+    #
+    # SPDX-License-Identifier: Unlicense
 
     import time
 
@@ -144,6 +152,7 @@ multiple buttons.
         button_handler.update()
         time.sleep(0.0025)
 
+.. /include-example:::
 
 Documentation
 =============
