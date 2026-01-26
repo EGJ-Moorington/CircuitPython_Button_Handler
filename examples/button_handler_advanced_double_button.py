@@ -3,6 +3,15 @@
 #
 # SPDX-License-Identifier: Unlicense
 
+"""
+This example demonstrates advanced usage of the library for a two button set-up.
+
+The example shows how to:
+- Handle triple presses
+- Handle a button press while another is being held down
+- Set configurations for buttons (e.g. multi_press_interval)
+"""
+
 import time
 
 import board

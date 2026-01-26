@@ -1,21 +1,30 @@
 # SPDX-FileCopyrightText: 2024 Justin Myers for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2026 EGJ Moorington
 #
 # SPDX-License-Identifier: Unlicense
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.13
+    rev: v0.14.10
     hooks:
-      - id: ruff-format
-      - id: ruff
+      - id: ruff-check
         args: ["--fix"]
+      - id: ruff-format
   - repo: https://github.com/fsfe/reuse-tool
-    rev: v5.0.2
+    rev: v6.2.0
     hooks:
       - id: reuse
+
+  - repo: local
+    hooks:
+      - id: readme-example-updater
+        name: update readme examples
+        language: python
+        entry: python scripts/update_readme_examples.py
+        files: (^README\.rst$)|(^examples/.*\.py$)

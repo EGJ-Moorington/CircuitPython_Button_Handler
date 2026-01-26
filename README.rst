@@ -103,14 +103,26 @@ multiple buttons.
 | D9            |
 +---------------+
 
+.. include-example::: examples/button_handler_single_button.py
+    :language: python
+
 .. code-block:: python
+
+    # SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
+    # SPDX-FileCopyrightText: Copyright (c) 2024 EGJ Moorington
+    #
+    # SPDX-License-Identifier: Unlicense
+
+    """
+    This example demonstrates simple usage of the library for a single button set-up.
+    """
 
     import time
 
     import board
     from keypad import Keys
 
-    from button_handler import ButtonHandler, ButtonInitConfig, ButtonInput
+    from button_handler import ButtonHandler, ButtonInput
 
 
     def double_press():
@@ -144,6 +156,7 @@ multiple buttons.
         button_handler.update()
         time.sleep(0.0025)
 
+.. /include-example:::
 
 Documentation
 =============

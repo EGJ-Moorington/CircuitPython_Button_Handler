@@ -28,8 +28,8 @@ This simple script showcases the usage of this library using a single button.
 | D9            |
 +---------------+
 
-.. literalinclude:: ../examples/button_handler_singlebutton.py
-    :caption: examples/button_handler_singlebutton.py
+.. literalinclude:: ../examples/button_handler_single_button.py
+    :caption: examples/button_handler_single_button.py
     :linenos:
 
 Advanced single button
@@ -45,8 +45,8 @@ This advanced script demonstrates how to handle triple presses and configure a b
 | D9            |
 +---------------+
 
-.. literalinclude:: ../examples/button_handler_advancedsinglebutton.py
-    :caption: examples/button_handler_advancedsinglebutton.py
+.. literalinclude:: ../examples/button_handler_advanced_single_button.py
+    :caption: examples/button_handler_advanced_single_button.py
     :linenos:
 
 Double button
@@ -62,6 +62,23 @@ This script showcases the usage of this library using two buttons.
 | D9              | A2              |
 +-----------------+-----------------+
 
-.. literalinclude:: ../examples/button_handler_doublebutton.py
-    :caption: examples/button_handler_doublebutton.py
+.. literalinclude:: ../examples/button_handler_double_button.py
+    :caption: examples/button_handler_double_button.py
+    :linenos:
+
+Advanced double button
+----------------------
+
+This advanced script demonstrates how to handle triple presses, configure buttons and handle button presses while another button is being held down.
+
++-----------------+-----------------+
+| Button A wiring | Button B wiring |
++=================+=================+
+| GND             | GND             |
++-----------------+-----------------+
+| D9              | A2              |
++-----------------+-----------------+
+
+.. literalinclude:: ../examples/button_handler_advanced_double_button.py
+    :caption: examples/button_handler_advanced_double_button.py
     :linenos:
