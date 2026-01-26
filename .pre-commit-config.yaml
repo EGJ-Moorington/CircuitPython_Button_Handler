@@ -27,6 +27,4 @@ repos:
         name: update readme examples
         language: python
         entry: python scripts/update_readme_examples.py
-        files: |
-          (^README\.rst$)|
-          (^examples/.*\.py$)
+        files: (^README\.rst$)|(^examples/.*\.py$)

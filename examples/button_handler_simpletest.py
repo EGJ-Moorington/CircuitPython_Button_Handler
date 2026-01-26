@@ -3,6 +3,10 @@
 #
 # SPDX-License-Identifier: Unlicense
 
+"""
+This simple test can be used to ensure the hardware is working properly.
+"""
+
 import time
 
 import board

@@ -29,6 +29,14 @@ def find_used_examples(readme: str) -> set[Path]:
     return used_examples
 
 
+def find_all_files(directory: Path) -> set[Path]:
+    return {
+        Path(dirpath, filename)
+        for dirpath, _, filenames in directory.walk()
+        for filename in filenames
+    }
+
+
 def load_examples(paths: set[Path]) -> dict[str, str]:
     examples = {}
 
@@ -122,6 +130,11 @@ def main(*args):
     readme = README_PATH.read_text()
     updated_files = {Path(path_str) for path_str in args[0]}
     used_examples = find_used_examples(readme)
+    existing_examples = find_all_files(Path("examples"))
+
+    for example in used_examples:
+        if example not in existing_examples:
+            warnings.warn(f"Tried to include non-existent example: {example}")
 
     required_examples = (
         used_examples if README_PATH in updated_files else used_examples & updated_files
