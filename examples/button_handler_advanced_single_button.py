@@ -4,11 +4,13 @@
 #
 # SPDX-License-Identifier: Unlicense
 
-#
-# Demonstrates:
-# - handling a triple press
-# - setting configurations for buttons (e.g. multi_press_interval)
-#
+"""
+This example demonstrates advanced usage of the library for a single button set-up.
+
+The example shows how to:
+- Handle a triple press
+- Set configurations for buttons (e.g. multi_press_interval)
+"""
 
 import time
 

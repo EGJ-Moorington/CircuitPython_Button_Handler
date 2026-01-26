@@ -3,12 +3,16 @@
 #
 # SPDX-License-Identifier: Unlicense
 
+"""
+This example demonstrates simple usage of the library for a single button set-up.
+"""
+
 import time
 
 import board
 from keypad import Keys
 
-from button_handler import ButtonHandler, ButtonInitConfig, ButtonInput
+from button_handler import ButtonHandler, ButtonInput
 
 
 def double_press():
